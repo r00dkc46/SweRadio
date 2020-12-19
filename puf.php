@@ -1,4 +1,4 @@
-php
+<?php
 
 PUF Phate's UDP Flooder V1.0.10
 
